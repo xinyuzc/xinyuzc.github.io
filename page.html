@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>In-Context Multi-Objective Optimization</title>
+
+<!-- KaTeX for math rendering -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '\\[', right: '\\]', display: true},
+      {left: '\\(', right: '\\)', display: false}
+    ],
+    throwOnError: false
+  });"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --accent: #234590;
+    --accent-soft: #eef1f9;
+    --accent-softer: #f6f8fc;
+    --ink: #1d1d1f;
+    --body: #2d2d33;
+    --muted: #6b6b73;
+    --muted-soft: #9a9aa2;
+    --rule: #e4e4e8;
+    --rule-soft: #eeeef1;
+    --bg: #ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--body);
+    font-family:'Source Sans 3', -apple-system, sans-serif;
+    font-size:17px;
+    line-height:1.72;
+    -webkit-font-smoothing:antialiased;
+    font-weight:400;
+  }
+  a{
+    color:var(--accent);
+    text-decoration:none;
+    border-bottom:1px solid transparent;
+    transition:border-color .15s;
+  }
+  a:hover{border-bottom-color:var(--accent)}
+
+  .wrap{
+    max-width:780px;
+    margin:0 auto;
+    padding:0 28px;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:80px 28px 60px;
+    text-align:center;
+    position:relative;
+  }
+  .hero-inner{max-width:760px;width:100%;}
+  .venue{
+    font-size:.78rem;
+    color:var(--muted);
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    font-weight:500;
+    margin-bottom:26px;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+  }
+  .venue::before,
+  .venue::after{
+    content:"";
+    width:24px;
+    height:1px;
+    background:var(--rule);
+  }
+  .venue .pill{color:var(--accent);font-weight:600;}
+
+  h1{
+    font-family:'Lora',serif;
+    font-weight:500;
+    font-size:3rem;
+    line-height:1.16;
+    color:var(--ink);
+    margin:0 auto 32px;
+    max-width:720px;
+    letter-spacing:-.018em;
+  }
+
+  .tldr{
+    font-family:'Lora',serif;
+    font-size:1.18rem;
+    line-height:1.62;
+    color:var(--body);
+    max-width:640px;
+    margin:0 auto 44px;
+    font-weight:400;
+  }
+  .tldr em{font-style:italic;color:var(--accent);font-weight:500;}
+
+  .authors{
+    font-size:1rem;
+    color:var(--ink);
+    margin-bottom:10px;
+    line-height:1.7;
+  }
+  .authors .a{display:inline-block;margin:0 6px;}
+  .authors sup{color:var(--accent);font-size:.72em;font-weight:600;}
+  .affils{
+    font-size:.86rem;
+    color:var(--muted);
+    margin-bottom:38px;
+    line-height:1.7;
+  }
+  .affils .a{display:inline-block;margin:0 8px;}
+  .affils sup{color:var(--accent);font-weight:600;margin-right:2px;}
+
+  .link-row{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .link-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 20px;
+    background:var(--ink);
+    color:#fff;
+    border-radius:30px;
+    font-size:.88rem;
+    font-weight:500;
+    border:none;
+    transition:transform .15s, background .15s, box-shadow .15s;
+  }
+  .link-btn:hover{
+    background:var(--accent);
+    border-bottom:1px solid transparent;
+    transform:translateY(-1px);
+    box-shadow:0 4px 12px rgba(35,69,144,.18);
+  }
+  .link-btn svg{width:14px;height:14px}
+
+  .scroll-hint{
+    position:absolute;
+    bottom:34px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:.72rem;
+    color:var(--muted);
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-weight:500;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    border:none!important;
+  }
+  .scroll-hint:hover{border:none;}
+  .scroll-hint .arrow{
+    width:1px;
+    height:22px;
+    background:var(--muted);
+    animation:bounce 2s ease-in-out infinite;
+  }
+  @keyframes bounce{
+    0%,100%{transform:translateY(0);opacity:.4}
+    50%{transform:translateY(4px);opacity:1}
+  }
+
+  /* ---------- CONTENT ---------- */
+  .content{
+    padding-top:84px;
+    border-top:1px solid var(--rule);
+  }
+  h2{
+    font-family:'Lora',serif;
+    font-weight:500;
+    font-size:1.7rem;
+    color:var(--ink);
+    margin:72px 0 22px;
+    line-height:1.3;
+    letter-spacing:-.008em;
+    position:relative;
+    padding-left:18px;
+  }
+  h2::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:.42em;
+    bottom:.32em;
+    width:3px;
+    background:var(--accent);
+    border-radius:2px;
+  }
+  h2:first-of-type{margin-top:0;}
+  h3{
+    font-family:'Lora',serif;
+    font-weight:500;
+    font-size:1.2rem;
+    color:var(--ink);
+    margin:40px 0 14px;
+    letter-spacing:-.003em;
+  }
+  h4{
+    font-family:'Source Sans 3',sans-serif;
+    font-weight:600;
+    font-size:.82rem;
+    color:var(--accent);
+    margin:26px 0 10px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+  }
+  p{margin-bottom:18px;}
+  p strong{color:var(--ink);font-weight:600}
+  p em{font-style:italic}
+
+  ul{
+    margin:0 0 20px 4px;
+    padding-left:22px;
+  }
+  ul li{
+    margin-bottom:8px;
+    padding-left:6px;
+  }
+  ul li::marker{color:var(--accent);}
+
+  .mono{
+    font-family:'JetBrains Mono',monospace;
+    font-size:.85em;
+    background:var(--accent-soft);
+    padding:1px 6px;
+    border-radius:3px;
+    color:var(--accent);
+  }
+
+  /* ---------- MATH ---------- */
+  .katex-display{
+    margin:22px 0 26px !important;
+    overflow-x:auto;
+    overflow-y:hidden;
+    padding:4px 0;
+  }
+  .katex{font-size:1.02em;}
+
+  /* ---------- FIGURES ---------- */
+  figure{margin:34px 0;}
+  figure img{
+    display:block;
+    width:100%;
+    height:auto;
+  }
+  figure svg{
+    display:block;
+    width:100%;
+    height:auto;
+    border:1px solid var(--rule);
+    border-radius:6px;
+    background:#fcfcfd;
+  }
+  figcaption{
+    text-align:center;
+    font-size:.88rem;
+    color:var(--muted);
+    margin-top:14px;
+    line-height:1.6;
+    font-style:italic;
+    max-width:620px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+  figcaption strong{
+    font-style:normal;
+    color:var(--ink);
+    font-weight:600;
+  }
+
+  /* Side-by-side figures */
+  .fig-row{
+    display:flex;
+    gap:8px;
+    margin:34px 0;
+    align-items:flex-start;
+  }
+  .fig-row figure{
+    flex:1;
+    margin:0;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+  }
+  .fig-row figure img{width:100%;height:auto;}
+  .fig-row figure figcaption{
+    margin-top:auto;
+    padding-top:12px;
+  }
+  @media (max-width:680px){
+    .fig-row{flex-direction:column;gap:8px;}
+  }
+
+  /* ---------- TABLE ---------- */
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin:26px 0;
+    font-size:.94rem;
+  }
+  thead th{
+    text-align:left;
+    padding:12px 16px;
+    background:transparent;
+    color:var(--muted);
+    font-weight:600;
+    border-bottom:1.5px solid var(--ink);
+    font-size:.74rem;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+  }
+  tbody td{
+    padding:16px;
+    border-bottom:1px solid var(--rule-soft);
+    color:var(--body);
+    vertical-align:top;
+  }
+  tbody td:first-child{
+    font-weight:600;
+    color:var(--ink);
+    width:30%;
+  }
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover td{background:var(--accent-softer);}
+
+  /* ---------- CODE BLOCK ---------- */
+  pre{
+    background:#f7f7f9;
+    border:1px solid var(--rule);
+    border-left:3px solid var(--accent);
+    padding:20px 24px;
+    border-radius:4px;
+    overflow-x:auto;
+    font-family:'JetBrains Mono',monospace;
+    font-size:.82rem;
+    line-height:1.75;
+    color:var(--body);
+    margin:20px 0 32px;
+  }
+
+  footer{
+    margin-top:88px;
+    padding:36px 0 52px;
+    border-top:1px solid var(--rule);
+    text-align:center;
+    font-size:.85rem;
+    color:var(--muted);
+  }
+  footer .mark{
+    font-family:'Lora',serif;
+    font-style:italic;
+    color:var(--accent);
+  }
+
+  @media (max-width:680px){
+    body{font-size:16px}
+    h1{font-size:2rem}
+    .tldr{font-size:1.04rem}
+    h2{font-size:1.42rem;margin-top:52px}
+    h3{font-size:1.08rem}
+    .hero{padding:60px 22px 40px;min-height:auto;}
+    .scroll-hint{display:none}
+    .content{padding-top:52px}
+    .wrap{padding:0 22px}
+    tbody td:first-child{width:36%;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="venue">
+      <span class="pill">ICLR · 2026</span>
+    </div>
+
+    <h1>In-Context Multi-Objective Optimization</h1>
+
+    <p class="tldr">
+      A <em>dimension-agnostic</em>, <em>fully amortized</em> policy (surrogate + acquisition) for black-box multi-objective optimization. One pretrained model proposes the next design for any new problem in a <em>single forward pass</em>.
+    </p>
+
+    <div class="authors">
+      <span class="a">Xinyu Zhang<sup>1,2</sup></span>
+      <span class="a">Conor Hassan<sup>1,2</sup></span>
+      <span class="a">Julien Martinelli<sup>1,2</sup></span>
+      <span class="a">Daolang Huang<sup>1,2</sup></span>
+      <span class="a">Samuel Kaski<sup>1,2,3</sup></span>
+    </div>
+
+    <div class="affils">
+      <span class="a"><sup>1</sup>ELLIS Institute Finland</span>
+      <span class="a"><sup>2</sup>Aalto University, Finland</span>
+      <span class="a"><sup>3</sup>University of Manchester, UK</span>
+    </div>
+
+    <div class="link-row">
+      <a class="link-btn" href="https://openreview.net/pdf/8dd024273507acb18827876a24b27d1148a2126b.pdf">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        Paper
+      </a>
+      <a class="link-btn" href="https://github.com/xinyuzc/in-context-moo">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.4-4-1.4-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.9 1.2 1.9 1.2 1.1 1.9 2.9 1.4 3.6 1 .1-.8.4-1.4.8-1.7-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.2-3.2-.1-.4-.5-1.6.1-3.2 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0C17.3 4.5 18.3 4.8 18.3 4.8c.7 1.6.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.2.9 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
+        Code
+      </a>
+    </div>
+  </div>
+
+  <a href="#content" class="scroll-hint">
+    <span>Scroll</span>
+    <span class="arrow"></span>
+  </a>
+</section>
+
+<!-- ============================================================ CONTENT -->
+<div class="wrap content" id="content">
+
+  <h2>Abstract</h2>
+  <p>
+    Balancing competing objectives is omnipresent across science and engineering — drug efficacy versus toxicity, model accuracy versus latency, material strength versus weight. <strong>Multi-objective Bayesian optimization (MOBO)</strong> is the standard solution: fit a probabilistic surrogate to each objective, then optimize an acquisition function to choose the next design. In practice it requires tailored choices of surrogate and acquisition that rarely transfer, is myopic when multi-step planning is needed, and adds refitting overhead in parallel or time-sensitive loops.
+  </p>
+  <p>
+    We present <strong>TAMO</strong>, a fully amortized, universal policy for multi-objective black-box optimization. TAMO uses a transformer architecture that operates across varying input and objective dimensions, enabling pretraining on diverse, heterogeneous tasks and transfer to new problems without retraining: at test time, the pretrained model proposes the next design with a single forward pass.
+  </p>
+  <p>
+    Across synthetic benchmarks and real tasks, TAMO reduces proposal time by 50–1000× versus alternatives while matching or improving Pareto quality under tight evaluation budgets. These results show that transformers can perform online multi-objective optimization entirely in-context, eliminating per-task surrogate fitting and acquisition engineering, and open a path to foundation-style, plug-and-play optimizers for scientific discovery workflows.
+  </p>
+
+  <h2>The Transferability and Overhead Problem in Multi-Objective Bayesian Optimization</h2>
+
+  <p>
+    Real-world design problems rarely have a single number to maximize. The answer is not a single point but a <strong>Pareto front</strong>: the set of designs where no objective can be improved without hurting another. The goal of multi-objective optimization is to approximate this front with as few costly evaluations as possible.
+    One popular way to assess solution quality is the hypervolume (HV) indicator: For a reference point \(r \in \mathbb R^{d_y}\),
+    the hypervolume \(\text{HV}(\mathcal{P}(\mathcal{X}) | r)\) measures how much of the objective
+  space between \(r\) and the approximated frontier \(\mathcal{P}(\mathcal{X})\) is "covered" by Pareto-optimal points.
+  </p>
+
+  <figure>
+    <svg width="100%" viewBox="0 0 680 460" role="img" xmlns="http://www.w3.org/2000/svg">
+      <title>Hypervolume and Pareto front</title>
+      <desc>A bi-objective minimization plot showing a reference point, a Pareto front of five non-dominated solutions, the dominated hypervolume region, and several dominated points.</desc>
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+        <marker id="axarrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+
+      <line x1="80" y1="400" x2="640" y2="400" stroke="#73726c" stroke-width="1.2" marker-end="url(#axarrow)"/>
+      <line x1="80" y1="400" x2="80" y2="60" stroke="#73726c" stroke-width="1.2" marker-end="url(#axarrow)"/>
+      <text x="650" y="404" font-family="Source Sans 3" font-size="14" fill="#3d3d3a" dominant-baseline="central">f₁</text>
+      <text x="80" y="48" font-family="Source Sans 3" font-size="14" fill="#3d3d3a" text-anchor="middle">f₂</text>
+
+      <circle cx="110" cy="370" r="5" fill="#3d3d3a"/>
+      <text x="120" y="362" font-family="Source Sans 3" font-size="12" fill="#5f5e5a">ref. point r</text>
+
+      <path d="M110,370 L110,106 L160,106 L160,148 L260,148 L260,232 L360,232 L360,288 L460,288 L460,337 L560,337 L560,370 Z"
+            fill="#378ADD" fill-opacity="0.14" stroke="none"/>
+
+      <path d="M110,106 L160,106 L160,148 L260,148 L260,232 L360,232 L360,288 L460,288 L460,337 L560,337 L560,370"
+            fill="none" stroke="#185FA5" stroke-width="1.2" stroke-dasharray="2 3"/>
+
+      <rect x="190" y="305" width="122" height="22" rx="4" fill="#ffffff" fill-opacity="0.75"/>
+      <text x="252" y="315" font-family="Source Sans 3" font-size="14" font-weight="500" fill="#185FA5" text-anchor="middle" dominant-baseline="central">Hypervolume</text>
+
+      <path d="M160,106 C180,112 220,132 260,148 C300,176 330,212 360,232 C390,266 430,282 460,288 C500,307 540,330 560,337"
+            fill="none" stroke="#0F6E56" stroke-width="1.8" stroke-dasharray="6 4"/>
+
+      <text x="470" y="200" font-family="Source Sans 3" font-size="14" font-weight="500" fill="#0F6E56" text-anchor="middle">Pareto front</text>
+
+      <circle cx="160" cy="106" r="5" fill="#185FA5"/>
+      <circle cx="260" cy="148" r="5" fill="#185FA5"/>
+      <circle cx="360" cy="232" r="5" fill="#185FA5"/>
+      <circle cx="460" cy="288" r="5" fill="#185FA5"/>
+      <circle cx="560" cy="337" r="5" fill="#185FA5"/>
+
+      <circle cx="230" cy="246" r="4" fill="#888780"/>
+      <circle cx="300" cy="295" r="4" fill="#888780"/>
+      <circle cx="400" cy="351" r="4" fill="#888780"/>
+      <circle cx="180" cy="274" r="4" fill="#888780"/>
+      <circle cx="360" cy="330" r="4" fill="#888780"/>
+      <circle cx="460" cy="365" r="4" fill="#888780"/>
+
+      <line x1="255" y1="156" x2="233" y2="239" stroke="#185FA5" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <text x="218" y="200" font-family="Source Sans 3" font-size="12" fill="#185FA5" text-anchor="end">dominates</text>
+    </svg>
+    <figcaption><strong>Figure 1.</strong> A Pareto front in two objectives. The goal is to approximate the dashed curve using as few oracle calls as possible, since each evaluation can be slow or expensive.</figcaption>
+  </figure>
+
+  <p>
+    Classical MOBO refits a statistical surrogate — typically a Gaussian process (GP) — at every step and re-optimizes an acquisition function (AF). It works, but:
+  </p>
+  <ul>
+    <li>The choice of surrogate and acquisition rarely transfers to the next problem.</li>
+    <li>The per-step overhead from GP refitting and AF optimization scales quickly in parallel settings.</li>
+  </ul>
+  <p>
+    The question this paper asks is simple: <em>what if a single pretrained model could replace both, for any problem, in any dimensionality?</em>
+  </p>
+
+  <!-- ============================================================ METHOD -->
+  <h2>Method: in-context multi-objective optimization</h2>
+
+  <p>
+    TAMO is a transformer-based framework trained on a large, diverse corpus of synthetic optimization tasks. At test time, it conditions on the optimization history and suggests the next query in a single forward pass.
+  </p>
+  <figure>
+    <img src="assets/figures/main_gist.png" alt="TAMO conceptual workflow">
+    <figcaption><strong>Figure 2.</strong> Conceptual workflow of TAMO. A single pretrained transformer replaces the entire surrogate-plus-acquisition stack of classical MOBO.</figcaption>
+  </figure>
+
+
+  <h3>Architecture</h3>
+
+  <figure>
+    <img src="assets/figures/architecture.png" alt="TAMO architecture diagram">
+    <figcaption><strong>Figure 3.</strong> Detailed architecture of TAMO, showing the dimension-agnostic embedder, shared transformer backbone, and the two training heads (prediction and optimization).</figcaption>
+  </figure>
+
+  <h3>Pretraining</h3>
+
+  <p>
+    TAMO is pretrained offline on a distribution of synthetic multi-objective tasks drawn from Gaussian process priors with varied kernels, length scales, and input/output dimensionalities. Because the embedder is dimension-agnostic, a <em>single</em> pretraining run can draw tasks with different numbers of features and objectives.  </p>
+  <p>
+    Two training signals share the same transformer backbone:
+  </p>
+  <ul>
+    <li><strong>An optimization objective</strong>, trained via reinforcement learning. Each episode is a synthetic black-box optimization task. At step \(t\), the policy \(\pi_\theta\) sees the history \(\mathcal{H}_{1:t-1} = \{(\mathbf{x}_i, \mathbf{y}_i)\}_{i=1}^{t-1}\) and proposes the next query from a candidate set.
+      </li>
+    <li><strong>A prediction objective</strong>, in which the same backbone models the posterior predictive at test points given a context set. This auxiliary task regularizes the representations and stabilizes policy learning. 
+    </li>
+  </ul>
+
+  <!-- <p>
+    Concretely, the prediction head outputs a mixture-of-Gaussians over each objective,
+  </p>
+  \[
+    p\!\left(y_{i,k}^{p}\mid \mathbf{x}_i^{p}, \mathcal{D}^{c}\right)
+    \;=\; \sum_{\ell=1}^{K} \phi_{i\ell}\,\mathcal{N}\!\bigl(y_{i,k}^{p};\,\mu_{i\ell},\,\sigma_{i\ell}^{2}\bigr),
+  \]
+  <p>
+    and the policy head scores each candidate \(\mathbf{x}_i^{q}\) with a softmax over logits produced from the history and the candidate set,
+  </p>
+  \[
+    \pi_\theta\!\bigl(\mathbf{x}_i^{q}\mid t, T, \mathcal{H}_{1:t-1}\bigr)
+    \;=\; \frac{\exp(\alpha_i)}{\sum_{r=1}^{N_q}\exp(\alpha_r)}.
+  \] -->
+
+  <!-- ============================================================ RESULTS -->
+  <h2>Results</h2>
+
+  <p>
+    We evaluate TAMO on synthetic and real-world multi-objective benchmarks against GP-based MOBO baselines (qNEHVI, qNParEGO, qHVKG) and the amortized baseline BOFormer.
+  </p>
+
+  <figure>
+    <img src="assets/figures/figure_3.png" alt="Results on synthetic and real-world benchmarks">
+    <figcaption><strong>Figure 4.</strong> Synthetic and real-world multi-objective benchmarks: simple regret (top) and cumulative inference time (bottom) vs. oracle calls (mean ± 95% CI over 30 runs). TAMO achieves competitive regret while cutting proposal time by 50–1000×.</figcaption>
+  </figure>
+
+  <figure>
+    <img src="assets/figures/figure_s10.png" alt="Results on HPO-3DGS hyperparameter optimization tasks">
+    <figcaption><strong>Figure 5.</strong> HPO-3DGS hyperparameter optimization tasks. TAMO is competitive with the best-performing GP-based methods (with qNEHVI slightly ahead on Mic), while achieving significantly lower inference time.</figcaption>
+  </figure>
+
+  <h3>Generalization</h3>
+  <p>
+    One interesting result is that one pretrained model transfers across heterogeneous problem structures with no retraining — both to unseen input dimensionalities and to settings where each objective is observed independently.
+  </p>
+
+  <div class="fig-row">
+    <figure>
+      <img src="assets/figures/figure_4a.png" alt="Results on out-of-distribution dimensions">
+      <figcaption><strong>Figure 6.</strong> Transfer to out-of-distribution input dimensions.</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/figures/figure_4b.png" alt="Results on independently observed objectives">
+      <figcaption><strong>Figure 7.</strong> Transfer to independently observed objectives.</figcaption>
+    </figure>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Aspect</th><th>Finding</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Pareto quality</td>
+        <td>Matches or beats specialized GP baselines and amortized methods on simple regret under tight evaluation budget.</td>
+      </tr>
+      <tr>
+        <td>Wall-clock speed</td>
+        <td>Orders of magnitude faster proposal time than GP-based MOBO and the amortized baseline, BOFormer, which still relies on task-specific surrogates.</td>
+      </tr>
+      <tr>
+        <td>Generalization</td>
+        <td>One pretrained model across input/output dimensions and across function families, with no retraining.</td>
+      </tr>
+      <tr>
+        <td>Single-objective BO</td>
+        <td>Applies effortlessly to single-objective optimization, yielding competitive results against GP baselines.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- <p>
+    The largest gains appear on out-of-distribution test problems where task-specific surrogates struggle to choose appropriate kernels or hyperparameters. The one regime where GP baselines remain ahead is on problems with very long objective length scales — outside the range covered by TAMO's pretraining corpus.
+  </p> -->
+
+  <!-- ============================================================ BIBTEX -->
+  <h2>BibTeX</h2>
+  <pre>@inproceedings{zhang2025incontextmoo,
+  title     = {In-Context Multi-Objective Optimization},
+  author    = {Zhang, Xinyu and Hassan, Conor and Martinelli, Julien and Huang, Daolang and Kaski, Samuel},
+  booktitle = {OpenReview Preprint},
+  year      = {2025},
+  url       = {https://openreview.net/forum?id=8dd024273507acb18827876a24b27d1148a2126b}
+}</pre>
+
+  <footer>
+    Project page · <span class="mark">in-context-moo</span> · 2025
+  </footer>
+
+</div>
+
+</body>
+</html>
