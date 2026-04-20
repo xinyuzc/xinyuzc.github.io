@@ -71,7 +71,7 @@
     text-align:center;
     position:relative;
   }
-  .hero-inner{max-width:760px;width:100%;}
+  .hero-inner{max-width:760px;width:100%;padding-bottom:80px;}
   .venue{
     font-size:.78rem;
     color:var(--muted);
@@ -140,8 +140,8 @@
   .link-btn{
     display:inline-flex;
     align-items:center;
-    gap:8px;
-    padding:10px 20px;
+    gap:10px;
+    padding:8px 20px;
     background:var(--ink);
     color:#fff;
     border-radius:30px;
@@ -378,6 +378,78 @@
     color:var(--accent);
   }
 
+  /* ---------- STICKY NAV ---------- */
+  .site-nav{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    z-index:100;
+    background:rgba(255,255,255,0.88);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--rule);
+    transform:translateY(-100%);
+    transition:transform .25s ease;
+  }
+  .site-nav.visible{transform:translateY(0);}
+  .site-nav-inner{
+    max-width:780px;
+    margin:0 auto;
+    padding:0 28px;
+    height:46px;
+    display:flex;
+    align-items:center;
+    gap:0;
+  }
+  .site-nav a{
+    font-size:.78rem;
+    font-weight:500;
+    color:var(--muted);
+    letter-spacing:.04em;
+    padding:0 14px;
+    height:100%;
+    display:flex;
+    align-items:center;
+    border-bottom:none;
+    transition:color .15s;
+  }
+  .site-nav a:hover{color:var(--accent);border-bottom:none;}
+  .site-nav a.active{color:var(--accent);}
+
+  /* ---------- TAMO ROW HIGHLIGHT ---------- */
+  tr.tamo-row td{
+    background:var(--accent-soft);
+  }
+  tr.tamo-row:hover td{
+    background:var(--accent-soft);
+    filter:brightness(0.97);
+  }
+
+  /* ---------- COPY BIBTEX ---------- */
+  .bibtex-wrap{position:relative;}
+  .copy-btn{
+    position:absolute;
+    top:10px;
+    right:10px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:5px 12px;
+    background:var(--bg);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    font-family:'Source Sans 3',sans-serif;
+    font-size:.76rem;
+    font-weight:500;
+    color:var(--muted);
+    cursor:pointer;
+    transition:color .15s, border-color .15s, background .15s;
+  }
+  .copy-btn:hover{color:var(--accent);border-color:var(--accent);}
+  .copy-btn.copied{color:#1a7f4b;border-color:#1a7f4b;background:#f0faf4;}
+  .copy-btn svg{width:12px;height:12px;flex-shrink:0;}
+
   @media (max-width:680px){
     body{font-size:16px}
     h1{font-size:2rem}
@@ -389,10 +461,25 @@
     .content{padding-top:52px}
     .wrap{padding:0 22px}
     tbody td:first-child{width:36%;}
+    .site-nav-inner{padding:0 16px;}
+    .site-nav a{padding:0 10px;font-size:.72rem;}
   }
 </style>
 </head>
 <body>
+
+<!-- ============================================================ NAV -->
+<nav class="site-nav" id="site-nav" aria-label="Page sections">
+  <div class="site-nav-inner">
+    <a href="#sec-abstract">Abstract</a>
+    <a href="#sec-mobo">Background</a>
+    <a href="#sec-method">Method</a>
+    <a href="#sec-results">Results</a>
+    <a href="#sec-takeaways">Takeaways</a>
+    <a href="#sec-limitations">Limitations</a>
+    <a href="#sec-bibtex">BibTeX</a>
+  </div>
+</nav>
 
 <!-- ============================================================ HERO -->
 <section class="hero">
@@ -404,7 +491,7 @@
     <h1>In-Context Multi-Objective Optimization</h1>
 
     <p class="tldr">
-      A <em>dimension-agnostic</em>, <em>fully amortized</em> policy (surrogate + acquisition) for black-box multi-objective optimization. One pretrained model proposes the next design for any new problem in a <em>single forward pass</em>.
+      A <em>dimension-agnostic</em>, <em>fully amortized</em> policy for multi-objective black-box optimization — replaces the surrogate-plus-acquisition stack with a <em>single forward pass</em>.
     </p>
 
     <div class="authors">
@@ -442,24 +529,24 @@
 <!-- ============================================================ CONTENT -->
 <div class="wrap content" id="content">
 
-  <h2>Abstract</h2>
+  <h2 id="sec-abstract">Abstract</h2>
   <p>
-    Balancing competing objectives is omnipresent across science and engineering — drug efficacy versus toxicity, model accuracy versus latency, material strength versus weight. <strong>Multi-objective Bayesian optimization (MOBO)</strong> is the standard solution: fit a probabilistic surrogate to each objective, then optimize an acquisition function to choose the next design. In practice it requires tailored choices of surrogate and acquisition that rarely transfer, is myopic when multi-step planning is needed, and adds refitting overhead in parallel or time-sensitive loops.
+    Balancing competing objectives is omnipresent across science and engineering — drug efficacy versus toxicity, model accuracy versus latency, material strength versus weight. <strong>Multi-objective Bayesian optimization (MOBO)</strong> is the standard approach: fit a probabilistic surrogate to each objective, then optimize an acquisition function to select the next design. In practice, however, surrogate and acquisition choices rarely transfer across problems, and the per-step refitting and re-optimization overhead accumulates quickly in parallel or time-sensitive loops.
   </p>
   <p>
-    We present <strong>TAMO</strong>, a fully amortized, universal policy for multi-objective black-box optimization. TAMO uses a transformer architecture that operates across varying input and objective dimensions, enabling pretraining on diverse, heterogeneous tasks and transfer to new problems without retraining: at test time, the pretrained model proposes the next design with a single forward pass.
+    We present <strong><em>TAMO</em></strong>, a transformer that replaces the entire surrogate-plus-acquisition stack with a single forward pass. By operating directly over the optimization history — without fitting any task-specific model - TAMO can be pretrained once on diverse synthetic tasks and transferred to new problems in any input or objective dimensionality, with no retraining required.
   </p>
   <p>
-    Across synthetic benchmarks and real tasks, TAMO reduces proposal time by 50–1000× versus alternatives while matching or improving Pareto quality under tight evaluation budgets. These results show that transformers can perform online multi-objective optimization entirely in-context, eliminating per-task surrogate fitting and acquisition engineering, and open a path to foundation-style, plug-and-play optimizers for scientific discovery workflows.
+    Across synthetic benchmarks and real-world tasks, TAMO reduces proposal time by 50–1000× versus GP-based MOBO while matching or improving Pareto quality under tight evaluation budgets. These results demonstrate that in-context learning is a viable path toward plug-and-play multi-objective optimization — removing the need for per-task surrogate engineering without sacrificing solution quality.
   </p>
 
-  <h2>The Transferability and Overhead Problem in Multi-Objective Bayesian Optimization</h2>
+  <h2 id="sec-mobo">Limitations of Classical MOBO</h2>
 
   <p>
     Real-world design problems rarely have a single number to maximize. The answer is not a single point but a <strong>Pareto front</strong>: the set of designs where no objective can be improved without hurting another. The goal of multi-objective optimization is to approximate this front with as few costly evaluations as possible.
-    One popular way to assess solution quality is the hypervolume (HV) indicator: For a reference point \(r \in \mathbb R^{d_y}\),
-    the hypervolume \(\text{HV}(\mathcal{P}(\mathcal{X}) | r)\) measures how much of the objective
-  space between \(r\) and the approximated frontier \(\mathcal{P}(\mathcal{X})\) is "covered" by Pareto-optimal points.
+  </p>
+  <p>
+    To measure progress toward this front, we use the <strong>hypervolume (HV) indicator</strong>: for a reference point \(r \in \mathbb R^{d_y}\), \(\text{HV}(\mathcal{P}(\mathcal{X}) \mid r)\) measures how much of the objective space between \(r\) and the approximated frontier \(\mathcal{P}(\mathcal{X})\) is covered by Pareto-optimal points.
   </p>
 
   <figure>
@@ -522,13 +609,14 @@
   <ul>
     <li>The choice of surrogate and acquisition rarely transfers to the next problem.</li>
     <li>The per-step overhead from GP refitting and AF optimization scales quickly in parallel settings.</li>
+    <li>Most acquisitions are myopic: they optimize a one-step gain, which can miss designs that open up better regions of the Pareto front later.</li>
   </ul>
   <p>
     The question this paper asks is simple: <em>what if a single pretrained model could replace both, for any problem, in any dimensionality?</em>
   </p>
 
   <!-- ============================================================ METHOD -->
-  <h2>Method: in-context multi-objective optimization</h2>
+  <h2 id="sec-method">TAMO: Task-Agnostic Amortized Multi-Objective Optimization</h2>
 
   <p>
     TAMO is a transformer-based framework trained on a large, diverse corpus of synthetic optimization tasks. At test time, it conditions on the optimization history and suggests the next query in a single forward pass.
@@ -538,8 +626,30 @@
     <figcaption><strong>Figure 2.</strong> Conceptual workflow of TAMO. A single pretrained transformer replaces the entire surrogate-plus-acquisition stack of classical MOBO.</figcaption>
   </figure>
 
+  <table>
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th>Multi-objective</th>
+        <th>End-to-end amortized</th>
+        <th>Input agnostic</th>
+        <th>Output agnostic</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Vanilla MOBO</td><td><span style="color:#1a7f4b">✓</span></td><td><span style="color:#c0392b">✗</span></td><td>—</td><td>—</td></tr>
+      <tr><td>BOFormer</td><td><span style="color:#1a7f4b">✓</span></td><td><span style="color:#c0392b">✗</span></td><td>—</td><td><span style="color:#c0392b">✗</span></td></tr>
+      <tr><td>NAP</td><td><span style="color:#c0392b">✗</span></td><td><span style="color:#1a7f4b">✓</span></td><td><span style="color:#c0392b">✗</span></td><td><span style="color:#c0392b">✗</span></td></tr>
+      <tr><td>DANP</td><td><span style="color:#c0392b">✗</span></td><td><span style="color:#c0392b">✗</span></td><td><span style="color:#1a7f4b">✓</span></td><td><span style="color:#c0392b">✗</span></td></tr>
+      <tr class="tamo-row"><td><strong>TAMO (ours)</strong></td><td><span style="color:#1a7f4b">✓</span></td><td><span style="color:#1a7f4b">✓</span></td><td><span style="color:#1a7f4b">✓</span></td><td><span style="color:#1a7f4b">✓</span></td></tr>
+    </tbody>
+  </table>
 
   <h3>Architecture</h3>
+
+  <p>
+    The key enabling component is a <strong>dimension-agnostic embedder</strong>: each observation \((\mathbf{x}, \mathbf{y})\) - regardless of how many input features or objectives it has — is projected to a fixed-size vector by applying scalar-to-vector maps dimension-wise, interacting via attention, adding learnable positional tokens, and mean-pooling. This lets the same backbone process tasks with different \(d_x\) and \(d_y\) without any architectural changes.
+  </p>
 
   <figure>
     <img src="assets/figures/architecture.png" alt="TAMO architecture diagram">
@@ -549,37 +659,78 @@
   <h3>Pretraining</h3>
 
   <p>
-    TAMO is pretrained offline on a distribution of synthetic multi-objective tasks drawn from Gaussian process priors with varied kernels, length scales, and input/output dimensionalities. Because the embedder is dimension-agnostic, a <em>single</em> pretraining run can draw tasks with different numbers of features and objectives.  </p>
+    TAMO is pretrained offline on a distribution of synthetic multi-objective tasks drawn from Gaussian process priors with varied kernels, length scales, and input/output dimensionalities. Because the embedder is dimension-agnostic, a <em>single</em> pretraining run can draw tasks with different numbers of features and objectives.
+  </p>
   <p>
     Two training signals share the same transformer backbone:
   </p>
-  <ul>
-    <li><strong>An optimization objective</strong>, trained via reinforcement learning. Each episode is a synthetic black-box optimization task. At step \(t\), the policy \(\pi_\theta\) sees the history \(\mathcal{H}_{1:t-1} = \{(\mathbf{x}_i, \mathbf{y}_i)\}_{i=1}^{t-1}\) and proposes the next query from a candidate set.
-      </li>
-    <li><strong>A prediction objective</strong>, in which the same backbone models the posterior predictive at test points given a context set. This auxiliary task regularizes the representations and stabilizes policy learning. 
-    </li>
-  </ul>
 
-  <!-- <p>
-    Concretely, the prediction head outputs a mixture-of-Gaussians over each objective,
-  </p>
-  \[
-    p\!\left(y_{i,k}^{p}\mid \mathbf{x}_i^{p}, \mathcal{D}^{c}\right)
-    \;=\; \sum_{\ell=1}^{K} \phi_{i\ell}\,\mathcal{N}\!\bigl(y_{i,k}^{p};\,\mu_{i\ell},\,\sigma_{i\ell}^{2}\bigr),
-  \]
+  <h4>Policy head &amp; RL objective</h4>
   <p>
-    and the policy head scores each candidate \(\mathbf{x}_i^{q}\) with a softmax over logits produced from the history and the candidate set,
+    The policy head assigns each candidate \(\mathbf{x}_i^{q}\) a scalar logit \(\alpha_i := \mathrm{MLP}_\theta(\hat{\mathbf{E}}_i^{q})\) and converts them to a categorical distribution over the query set:
   </p>
   \[
     \pi_\theta\!\bigl(\mathbf{x}_i^{q}\mid t, T, \mathcal{H}_{1:t-1}\bigr)
-    \;=\; \frac{\exp(\alpha_i)}{\sum_{r=1}^{N_q}\exp(\alpha_r)}.
-  \] -->
+    \;=\; \frac{\exp(\alpha_i)}{\displaystyle\sum_{r=1}^{N_q}\exp(\alpha_r)}.
+  \]
+  <p>
+    At each step \(t\), observing \(\mathbf{y}_t\) yields a reward equal to the normalized hypervolume level,
+    \(r_t = \mathrm{HV}(\mathcal{P}(\mathcal{D}^h)\mid\mathbf{r})\,/\,\mathrm{HV}^\star_\tau\).
+    The policy maximizes the expected discounted return over full trajectories,
+  </p>
+  \[
+    J(\theta) \;=\; \mathbb{E}_{\tau\sim p(\tau)}\!\left[
+      \mathbb{E}_{\pi_\theta}\!\left[\sum_{t=1}^{T} \gamma^{t-1} r_t\right]
+    \right],
+  \]
+  <p>
+    estimated with REINFORCE. Training on complete trajectories encourages <em>non-myopic</em>, long-horizon Pareto improvement — in contrast to standard one-step acquisitions.
+  </p>
+
+  <h4>Prediction head &amp; auxiliary objective</h4>
+  <p>
+    The prediction head models each scalar objective \(y_{i,k}^{p}\) as a \(K\)-component Gaussian mixture conditioned on a context set \(\mathcal{D}^c\):
+  </p>
+  \[
+    p\!\left(y_{i,k}^{p}\mid\mathbf{x}_i^{p},\mathcal{D}^{c}\right)
+    \;=\; \sum_{\ell=1}^{K} \phi_{i\ell}\,\mathcal{N}\!\bigl(y_{i,k}^{p};\,\mu_{i\ell},\,\sigma_{i\ell}^{2}\bigr).
+  \]
+  <p>
+    This in-context regression task is trained by minimizing the negative log-likelihood:
+  </p>
+  \[
+    \mathcal{L}^{(p)}(\theta) \;=\;
+    -\,\mathbb{E}_{\tau\sim p(\tau)}\!\left[
+      \frac{1}{N_p\, d_y^\tau}
+      \sum_{i=1}^{N_p}\sum_{k=1}^{d_y^\tau}
+      \log p\!\left(y_{i,k}^{p}\mid\mathbf{x}_i^{p},\mathcal{D}^{c}\right)
+    \right].
+  \]
+  <p>
+    This auxiliary task regularizes the shared representations and stabilizes policy learning.
+  </p>
+
+  <h4>Combined objective</h4>
+  <p>
+    The two losses are combined into a single objective, optimized jointly after an initial prediction warm-up phase:
+  </p>
+  \[
+    \mathcal{L}(\theta) \;=\; \lambda_p\,\mathcal{L}^{(p)}(\theta) + \mathcal{L}^{(\mathrm{rl})}(\theta),
+    \qquad \mathcal{L}^{(\mathrm{rl})}(\theta) = -J(\theta),
+  \]
+  <p>
+    with \(\lambda_p = 1.0\) fixed across all experiments.
+  </p>
 
   <!-- ============================================================ RESULTS -->
-  <h2>Results</h2>
+  <h2 id="sec-results">Results</h2>
 
   <p>
     We evaluate TAMO on synthetic and real-world multi-objective benchmarks against GP-based MOBO baselines (qNEHVI, qNParEGO, qHVKG) and the amortized baseline BOFormer.
+  </p>
+
+  <p>
+    We report <strong>simple regret</strong> — how far the hypervolume of the approximated Pareto front is from the maximal hypervolume (lower is better) — and <strong>cumulative wall-clock proposal time</strong>, which for GP-based methods includes surrogate refitting and acquisition optimization at every step.
   </p>
 
   <figure>
@@ -608,6 +759,8 @@
     </figure>
   </div>
 
+    <!-- ============================================================ SUMMARY -->
+  <h2 id="sec-takeaways">Takeaways</h2>
   <table>
     <thead>
       <tr><th>Aspect</th><th>Finding</th></tr>
@@ -619,11 +772,15 @@
       </tr>
       <tr>
         <td>Wall-clock speed</td>
-        <td>Orders of magnitude faster proposal time than GP-based MOBO and the amortized baseline, BOFormer, which still relies on task-specific surrogates.</td>
+        <td>50–1000× lower proposal time than GP baselines and amortized methods.
+      </tr>
+      <tr>
+        <td>Synthetic-to-real transfer</td>
+        <td>Despite training only on synthetic GP priors, TAMO transfers competitively to real-world tasks — no real-data pretraining required.</td>
       </tr>
       <tr>
         <td>Generalization</td>
-        <td>One pretrained model across input/output dimensions and across function families, with no retraining.</td>
+        <td>One pretrained model across input/output dimensions and function families.</td>
       </tr>
       <tr>
         <td>Single-objective BO</td>
@@ -636,21 +793,76 @@
     The largest gains appear on out-of-distribution test problems where task-specific surrogates struggle to choose appropriate kernels or hyperparameters. The one regime where GP baselines remain ahead is on problems with very long objective length scales — outside the range covered by TAMO's pretraining corpus.
   </p> -->
 
+  <!-- ============================================================ LIMITATIONS -->
+  <h2 id="sec-limitations">Scope &amp; Limitations</h2>
+  <p>
+    TAMO is pretrained entirely on synthetic GP samples, which provides scale and control but may miss salient real-world structure. Performance is likely sensitive to the GP kernel family and smoothness used during pretraining. A systematic study of how corpus composition drives transfer is an important open direction.
+  </p>
+  <p>
+    Inference currently assumes a discrete candidate pool, which aligns well with discrete or low-dimensional design problems, but is restrictive in high-dimensional or generative settings, such as de novo molecular design. Extending TAMO to continuous proposal mechanisms (e.g., diffusion-based or autoregressive generators) is a natural next step.
+  </p>
+
   <!-- ============================================================ BIBTEX -->
-  <h2>BibTeX</h2>
-  <pre>@inproceedings{zhang2025incontextmoo,
-  title     = {In-Context Multi-Objective Optimization},
-  author    = {Zhang, Xinyu and Hassan, Conor and Martinelli, Julien and Huang, Daolang and Kaski, Samuel},
-  booktitle = {OpenReview Preprint},
-  year      = {2025},
-  url       = {https://openreview.net/forum?id=8dd024273507acb18827876a24b27d1148a2126b}
+  <h2 id="sec-bibtex">BibTeX</h2>
+  <div class="bibtex-wrap">
+    <button class="copy-btn" id="copy-btn" onclick="copyBibtex()" aria-label="Copy BibTeX">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy
+    </button>
+    <pre id="bibtex-text">@inproceedings{
+zhang2026incontext,
+title={In-Context Multi-Objective Optimization},
+author={Xinyu Zhang and Conor Hassan and Julien Martinelli and Daolang Huang and Samuel Kaski},
+booktitle={The Fourteenth International Conference on Learning Representations},
+year={2026},
+url={https://openreview.net/forum?id=odmeUlWta8}
 }</pre>
+  </div>
 
   <footer>
-    Project page · <span class="mark">in-context-moo</span> · 2025
+    Project page · <span class="mark">in-context-moo</span> · 2026
   </footer>
 
 </div>
 
+<script>
+  // ---------- sticky nav: show after hero, highlight active section ----------
+  const nav = document.getElementById('site-nav');
+  const hero = document.querySelector('.hero');
+  const sections = Array.from(document.querySelectorAll('[id^="sec-"]'));
+  const navLinks = Array.from(document.querySelectorAll('.site-nav a'));
+
+  const heroObserver = new IntersectionObserver(
+    ([e]) => nav.classList.toggle('visible', !e.isIntersecting),
+    {threshold: 0}
+  );
+  heroObserver.observe(hero);
+
+  const sectionObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + entry.target.id);
+        });
+      }
+    });
+  }, {rootMargin: '-30% 0px -60% 0px'});
+
+  sections.forEach(s => sectionObserver.observe(s));
+
+  // ---------- copy bibtex ----------
+  function copyBibtex() {
+    const text = document.getElementById('bibtex-text').innerText;
+    const btn = document.getElementById('copy-btn');
+    navigator.clipboard.writeText(text).then(() => {
+      btn.classList.add('copied');
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied`;
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
+      }, 2000);
+    });
+  }
+</script>
 </body>
 </html>
