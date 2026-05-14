@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Xinyu Zhang</title>
+    <meta name="description"
+        content="PhD student at Aalto University and ELLIS Institute Finland working on meta-learning, in-context learning, and sequential decision-making — training transformers via RL to act as adaptive optimization policies." />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --accent: #234590;
+            --accent-soft: #eef1f9;
+            --accent-softer: #f6f8fc;
+            --ink: #1d1d1f;
+            --body: #2d2d33;
+            --muted: #6b6b73;
+            --muted-soft: #9a9aa2;
+            --rule: #e4e4e8;
+            --rule-soft: #eeeef1;
+            --bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--body);
+            font-family: 'Source Sans 3', -apple-system, sans-serif;
+            font-size: 17px;
+            line-height: 1.72;
+            -webkit-font-smoothing: antialiased;
+            font-weight: 400;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color .15s;
+        }
+
+        a:hover {
+            border-bottom-color: var(--accent)
+        }
+
+        .wrap {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 0 28px;
+        }
+
+        /* ---------- HEADER ---------- */
+        header {
+            padding-top: 88px;
+            padding-bottom: 54px;
+            border-bottom: 1px solid var(--rule);
+        }
+
+        .header-grid {
+            display: block;
+        }
+
+        .name-block {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .eyebrow {
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: .78rem;
+            color: var(--muted);
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .eyebrow::after {
+            content: "";
+            width: 24px;
+            height: 1px;
+            background: var(--rule);
+        }
+
+        .eyebrow .pill {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        h1 {
+            font-family: 'Lora', serif;
+            font-weight: 500;
+            font-size: 2.6rem;
+            line-height: 1.16;
+            color: var(--ink);
+            letter-spacing: -.018em;
+            margin: 0;
+        }
+
+        @media (max-width:560px) {
+            h1 {
+                font-size: 1.9rem;
+            }
+        }
+
+        .affiliation {
+            font-size: 1rem;
+            color: var(--body);
+            margin-top: 4px;
+        }
+
+        .affiliation a {
+            font-weight: 500;
+        }
+
+        .tagline {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: 1.08rem;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        /* Availability banner — matches the venue pill / tldr feel */
+        .availability {
+            margin-top: 34px;
+            padding: 14px 18px;
+            background: var(--accent-soft);
+            border-left: 3px solid var(--accent);
+            border-radius: 3px;
+            font-size: .94rem;
+            color: var(--ink);
+        }
+
+        .availability strong {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .availability a {
+            font-weight: 500;
+            border-bottom: 1px solid transparent;
+        }
+
+        .availability a:hover {
+            border-bottom-color: var(--accent);
+        }
+
+        /* Quick link buttons — same component as TAMO page */
+        .link-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 7px 18px;
+            background: var(--ink);
+            color: #fff;
+            border-radius: 30px;
+            font-size: .85rem;
+            font-weight: 500;
+            border: none;
+            transition: transform .15s, background .15s, box-shadow .15s;
+        }
+
+        .link-btn:hover {
+            background: var(--accent);
+            border-bottom: 1px solid transparent;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(35, 69, 144, .18);
+        }
+
+        .link-btn svg {
+            width: 13px;
+            height: 13px;
+        }
+
+        /* ---------- CONTENT ---------- */
+        .content {
+            padding-top: 60px;
+            padding-bottom: 40px;
+        }
+
+        h2 {
+            font-family: 'Lora', serif;
+            font-weight: 500;
+            font-size: 1.7rem;
+            color: var(--ink);
+            margin: 64px 0 22px;
+            line-height: 1.3;
+            letter-spacing: -.008em;
+            position: relative;
+            padding-left: 18px;
+        }
+
+        h2::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: .42em;
+            bottom: .32em;
+            width: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        h2:first-of-type {
+            margin-top: 0;
+        }
+
+        @media (max-width:680px) {
+            h2 {
+                font-size: 1.42rem;
+                margin-top: 52px;
+            }
+        }
+
+        p {
+            margin-bottom: 18px;
+        }
+
+        p strong {
+            color: var(--ink);
+            font-weight: 600
+        }
+
+        p em {
+            font-style: italic
+        }
+
+        /* ---------- PUBLICATIONS ---------- */
+        .pub {
+            padding: 22px 0 22px 18px;
+            border-left: 2px solid var(--rule);
+            margin-bottom: 6px;
+            transition: border-color .15s;
+        }
+
+        .pub:hover {
+            border-left-color: var(--accent);
+        }
+
+        .pub+.pub {
+            border-top: 1px solid var(--rule-soft);
+        }
+
+        .pub-title {
+            font-family: 'Lora', serif;
+            font-weight: 500;
+            font-size: 1.18rem;
+            color: var(--ink);
+            line-height: 1.35;
+            margin-bottom: 6px;
+            letter-spacing: -.003em;
+        }
+
+        .pub-title a {
+            color: var(--ink);
+            border-bottom: none;
+        }
+
+        .pub-title a:hover {
+            color: var(--accent);
+        }
+
+        .pub-authors {
+            font-size: .96rem;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .pub-authors .me {
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+        .pub-venue {
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: .74rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-bottom: 10px;
+        }
+
+        .pub-tldr {
+            font-style: italic;
+            font-size: .96rem;
+            color: var(--muted);
+            margin-bottom: 10px;
+            max-width: 640px;
+        }
+
+        .pub-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .78rem;
+        }
+
+        .pub-links a {
+            color: var(--muted);
+            border-bottom: 1px dotted var(--muted-soft);
+        }
+
+        .pub-links a:hover {
+            color: var(--accent);
+            border-bottom: 1px dotted var(--accent);
+        }
+
+        .pub-group-label {
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: .74rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            margin: 36px 0 4px 18px;
+        }
+
+        /* ---------- ELSEWHERE LIST ---------- */
+        .elsewhere {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 22px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .84rem;
+        }
+
+        .elsewhere a {
+            color: var(--body);
+            border-bottom: 1px dotted var(--muted-soft);
+        }
+
+        .elsewhere a:hover {
+            color: var(--accent);
+            border-bottom: 1px dotted var(--accent);
+        }
+
+        /* ---------- FOOTER ---------- */
+        footer {
+            margin-top: 88px;
+            padding: 30px 0 52px;
+            border-top: 1px solid var(--rule);
+            text-align: center;
+            font-size: .82rem;
+            color: var(--muted);
+        }
+
+        footer .mark {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            color: var(--accent);
+        }
+
+        /* ---------- STICKY NAV (same component as TAMO page) ---------- */
+        .site-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--rule);
+            transform: translateY(-100%);
+            transition: transform .25s ease;
+        }
+
+        .site-nav.visible {
+            transform: translateY(0);
+        }
+
+        .site-nav-inner {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 0 28px;
+            height: 46px;
+            display: flex;
+            align-items: center;
+        }
+
+        .site-nav a {
+            font-size: .78rem;
+            font-weight: 500;
+            color: var(--muted);
+            letter-spacing: .04em;
+            padding: 0 14px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            border-bottom: none;
+            transition: color .15s;
+        }
+
+        .site-nav a:hover {
+            color: var(--accent);
+            border-bottom: none;
+        }
+
+        .site-nav a.active {
+            color: var(--accent);
+        }
+
+        @media (max-width:680px) {
+            .site-nav-inner {
+                padding: 0 16px;
+            }
+
+            .site-nav a {
+                padding: 0 10px;
+                font-size: .72rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ============================================================ NAV -->
+    <nav class="site-nav" id="site-nav" aria-label="Page sections">
+        <div class="site-nav-inner">
+            <a href="#sec-about">About</a>
+            <a href="#sec-publications">Publications</a>
+            <a href="#sec-contact">Elsewhere</a>
+        </div>
+    </nav>
+
+    <!-- ============================================================ HEADER -->
+    <div class="wrap">
+        <header id="top">
+            <div class="header-grid">
+                <div class="name-block">
+                    <span class="eyebrow"><span class="pill">PhD Student</span></span>
+                    <h1>Xinyu Zhang</h1>
+                    <p class="affiliation">
+                        <a href="https://ellis.eu/institutes/finland">ELLIS Institute Finland</a>
+                        &nbsp;·&nbsp;
+                        <a href="https://www.aalto.fi/">Department of Computer Science, Aalto University</a>
+                    </p>
+                    <p class="tagline">I build policies for black-box optimization that adapt in-context.</p>
+                </div>
+            </div>
+
+            <div class="availability">
+                <strong>Open to research and applied science internships</strong> in machine learning — available Spring / Summer 2027.
+                <a href="mailto:xinyu.2.zhang@aalto.fi">Get in touch →</a>
+            </div>
+
+            <div class="link-row">
+                <!-- <a class="link-btn" href="cv.pdf">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <path d="M14 2v6h6" />
+                    </svg>
+                    CV
+                </a> -->
+                <a class="link-btn" href="https://scholar.google.com/citations?user=v-4mhZkAAAAJ&hl=en">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M5.242 13.769L0.5 9.5 12 1l11.5 8.5-4.742 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14z" />
+                    </svg>
+                    Scholar
+                </a>
+                <a class="link-btn" href="https://github.com/xinyuzc">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.4-4-1.4-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.9 1.2 1.9 1.2 1.1 1.9 2.9 1.4 3.6 1 .1-.8.4-1.4.8-1.7-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.2-3.2-.1-.4-.5-1.6.1-3.2 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0C17.3 4.5 18.3 4.8 18.3 4.8c.7 1.6.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.2.9 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3" />
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+        </header>
+
+        <!-- ============================================================ CONTENT -->
+        <div class="content">
+
+            <h2 id="sec-about">About</h2>
+            <p>
+                I'm a second-year PhD student at <a href="https://www.aalto.fi/">Aalto University</a> and the
+                <a href="https://www.ellisinstitute.fi/">ELLIS Institute Finland</a>, supervised by
+                Prof. <a href="https://kaski-lab.com/">Samuel Kaski</a>.
+                My research sits at the intersection of <strong>meta-learning, in-context learning, and sequential
+                decision-making</strong> — I train transformers via reinforcement learning to act as adaptive policies
+                that replace the surrogate-and-acquisition stack of Bayesian optimization with a single forward pass.
+                I'm interested in making these solutions robust to prior misspecification and scalable to
+                high-dimensional and combinatorial spaces.
+            </p>
+            <p>
+                Before the PhD, I completed my Master's in Computer Science at Aalto University, and Bachelor's in
+                Computer Science and Engineering at Harbin Institute of Technology, Shenzhen.
+                Outside research I enjoy bouldering 🧗 and doodling 🖊️.
+            </p>
+
+            <h2 id="sec-publications">Publications</h2>
+
+            <div class="pub">
+                <div class="pub-title">
+                    <a href="https://openreview.net/forum?id=odmeUlWta8">In-Context Multi-Objective Optimization</a>
+                </div>
+                <div class="pub-authors">
+                    <span class="me">Xinyu Zhang</span>, Conor Hassan, Julien Martinelli, Daolang Huang, Samuel Kaski
+                </div>
+                <div class="pub-venue">ICLR 2026</div>
+                <div class="pub-tldr">
+                    A <strong>dimension-agnostic</strong> transformer that replaces the surrogate-plus-acquisition stack
+                    of (multi-objective)
+                    Bayesian optimization with a single forward pass; 50–1000× faster proposal time at matched Pareto
+                    quality.
+                </div>
+                <div class="pub-links">
+                    <a href="https://openreview.net/forum?id=odmeUlWta8">paper</a>
+                    <a href="https://github.com/xinyuzc/in-context-moo">code</a>
+                    <a href="https://xinyuzc.github.io/tamo">website</a>
+                </div>
+            </div>
+
+            <div class="pub">
+                <div class="pub-title">
+                    Constrained Bayesian Experimental Design via Online Planning
+                </div>
+                <div class="pub-authors">
+                    Yujia Guo, Daolang Huang, <span class="me">Xinyu Zhang</span>, Samuel Kaski, Ayush Bharti
+                </div>
+                <div class="pub-venue">ICML 2026 (to appear)</div>
+                <div class="pub-links">
+                    <span style="color:var(--muted-soft);font-family:'JetBrains Mono',monospace;font-size:.78rem">preprint coming soon</span>
+                </div>
+            </div>
+
+            <div class="pub">
+                <div class="pub-title">
+                    <a href="https://openreview.net/forum?id=YhfrKB3Ah7">
+                        PABBO: Preferential Amortized Black-Box Optimization</a>
+                </div>
+                <div class="pub-authors">
+                    <span class="me">Xinyu Zhang</span>, Daolang Huang, Samuel Kaski, Julien Martinelli
+                </div>
+                <div class="pub-venue">ICLR 2025 (Spotlight — top ~5% of submissions)</div>
+                <div class="pub-tldr">
+                    A transformer neural process trained with reinforcement learning that <strong>fully amortizes</strong> preferential 
+                    Bayesian optimization: meta-learning both the surrogate and the acquisition function. Several orders
+                    of magnitude faster than Gaussian-process baselines, and often more accurate.
+                </div>
+                <div class="pub-links">
+                    <a href="https://openreview.net/forum?id=YhfrKB3Ah7">paper</a>
+                    <a href="https://github.com/xinyuzc/PABBO">code</a>
+                </div>
+            </div>
+            <p class="pub-group-label">Workshops &amp; Preprints</p>
+
+            <div class="pub">
+                <div class="pub-title">
+                    <a href="https://arxiv.org/abs/2504.10169">Challenges in Interpretability of Additive Models</a>
+                </div>
+                <div class="pub-authors">
+                    <span class="me">Xinyu Zhang</span>, Julien Martinelli, ST John
+                </div>
+                <div class="pub-venue">IJCAI XAI workshop 2024</div>
+                <div class="pub-tldr">
+                    Generalized additive models — including their recent neural-network variants — exhibit multiple
+                    forms of <strong>nonidentifiability</strong> that complicate interpretation. We argue for restraint
+                    when claiming such models as <em>interpretable</em> or <em>suitable for safety-critical applications</em>.
+                </div>
+                <div class="pub-links">
+                    <a href="https://arxiv.org/abs/2504.10169">paper</a>
+                </div>
+            </div>
+
+            <h2 id="sec-contact">Elsewhere</h2>
+            <ul class="elsewhere">
+                <li><a href="mailto:xinyu.2.zhang@aalto.fi">email</a></li>
+                <!-- <li><a href="cv.pdf">cv (pdf)</a></li> -->
+                <li><a href="https://scholar.google.com/citations?user=v-4mhZkAAAAJ&hl=en">google scholar</a></li>
+                <li><a href="https://github.com/xinyuzc">github</a></li>
+                <li><a href="https://www.linkedin.com/in/xinyu-zhang-cs/">linkedin</a></li>
+            </ul>
+
+            <footer>
+                © 2026 Xinyu Zhang &nbsp;·&nbsp; <span class="mark">last updated May 2026</span>
+            </footer>
+
+        </div>
+    </div>
+
+    <script>
+        // sticky nav: appear after the header scrolls past, highlight active section
+        const nav = document.getElementById('site-nav');
+        const header = document.querySelector('header');
+        const sections = Array.from(document.querySelectorAll('[id^="sec-"]'));
+        const navLinks = Array.from(document.querySelectorAll('.site-nav a'));
+
+        const headerObserver = new IntersectionObserver(
+            ([e]) => nav.classList.toggle('visible', !e.isIntersecting),
+            { threshold: 0 }
+        );
+        headerObserver.observe(header);
+
+        const sectionObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach(a => {
+                        a.classList.toggle('active', a.getAttribute('href') === '#' + entry.target.id);
+                    });
+                }
+            });
+        }, { rootMargin: '-30% 0px -60% 0px' });
+
+        sections.forEach(s => sectionObserver.observe(s));
+    </script>
+</body>
+
+</html>
