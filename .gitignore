@@ -1,4 +1,5 @@
-notes.html
-cnf_learning_notes.md
-note_template.md
+# notes.html
+# cnf_learning_notes.md
+# note_template.md
 *.tex
+/local
