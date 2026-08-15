@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Xinyu Zhang</title>
     <meta name="description"
-        content="PhD student at Aalto University and ELLIS Institute Finland working on meta-learning, in-context learning, and sequential decision-making — training transformers via RL to act as adaptive optimization policies." />
+        content="PhD student at Aalto University and ELLIS Institute Finland working on meta-learning, amortized inference, and Bayesian optimization." />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,271 +16,261 @@
 
     <style>
         :root {
-            --accent: #234590;
-            --accent-soft: #eef1f9;
-            --accent-softer: #f6f8fc;
-            --ink: #1d1d1f;
-            --body: #2d2d33;
-            --muted: #6b6b73;
-            --muted-soft: #9a9aa2;
-            --rule: #e4e4e8;
-            --rule-soft: #eeeef1;
+            /* deep blue, 7.07:1 on white — darker than a bright blue but two full
+               ratio points lighter than the old navy (#234590, 9.03:1). What kept
+               that navy heavy was hue 221° at only 61% saturation; this sits at
+               209° with 74%, so the extra chroma and cyan lean stay luminous. */
+            --accent: #175a9b;
+            --accent-line: #b9cee1;
+            --ink: #17171b;
+            --body: #33333a;
+            --muted: #6e6e77;
+            --faint: #9d9da6;
+            --rule: #e7e7eb;
+            --chip: #f4f5f7;
             --bg: #ffffff;
+
+            /* layout scale — one rail, one measured column */
+            --page: min(70%, 1060px);
+            --rail: 168px;
+            --gutter: 40px;
+            --measure: 68ch;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
-            padding: 0
+            padding: 0;
         }
 
         html {
-            scroll-behavior: smooth
+            scroll-behavior: smooth;
         }
 
         body {
             background: var(--bg);
             color: var(--body);
             font-family: 'Source Sans 3', -apple-system, sans-serif;
-            font-size: 17px;
-            line-height: 1.72;
-            -webkit-font-smoothing: antialiased;
+            font-size: 19px;
+            line-height: 1.7;
             font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::selection {
+            background: #dae5ef;
+            color: var(--ink);
         }
 
         a {
             color: var(--accent);
             text-decoration: none;
-            border-bottom: 1px solid transparent;
-            transition: border-color .15s;
         }
 
-        a:hover {
-            border-bottom-color: var(--accent)
+        a:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+            border-radius: 2px;
         }
 
         .wrap {
-            max-width: 780px;
+            width: var(--page);
             margin: 0 auto;
             padding: 0 28px;
         }
 
         /* ---------- HEADER ---------- */
+        /* mirrors the section grid: rail holds the avatar, text shares the prose spine */
         header {
-            padding-top: 88px;
-            padding-bottom: 54px;
+            display: grid;
+            grid-template-columns: var(--rail) minmax(0, var(--measure));
+            gap: 0 var(--gutter);
+            padding: 96px 0 32px;
             border-bottom: 1px solid var(--rule);
         }
 
-        .header-grid {
-            display: block;
-        }
-
-        .name-block {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .eyebrow {
-            font-family: 'Source Sans 3', sans-serif;
-            font-size: .78rem;
-            color: var(--muted);
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .eyebrow::after {
-            content: "";
-            width: 24px;
-            height: 1px;
-            background: var(--rule);
-        }
-
-        .eyebrow .pill {
-            color: var(--accent);
-            font-weight: 600;
+        /* 70% of the name block's height; min-height is the floor if % can't resolve.
+           Painted as a background rather than an <img> so the browser context menu
+           offers no "Save Image As" — friction against casual copying, not real
+           protection. Only the 300px copy is published; the original stays local. */
+        .avatar {
+            height: 70%;
+            min-height: 104px;
+            aspect-ratio: 1;
+            align-self: start;
+            margin-top: 6px;
+            border-radius: 50%;
+            /* 118% crops in on the drawing, which sits small in its frame */
+            background: url("assets/avatar-web.jpg") no-repeat center / 118% auto;
+            /* multiply melts the paper tone into the page, leaving just the ink */
+            mix-blend-mode: multiply;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
         }
 
         h1 {
             font-family: 'Lora', serif;
             font-weight: 500;
-            font-size: 2.6rem;
-            line-height: 1.16;
+            font-size: clamp(2.1rem, 4vw, 2.9rem);
+            line-height: 1.1;
+            letter-spacing: -.02em;
             color: var(--ink);
-            letter-spacing: -.018em;
-            margin: 0;
         }
 
-        @media (max-width:560px) {
-            h1 {
-                font-size: 1.9rem;
-            }
+        .role {
+            margin-top: 14px;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--faint);
         }
 
         .affiliation {
-            font-size: 1rem;
-            color: var(--body);
             margin-top: 4px;
+            font-size: 1rem;
+            color: var(--muted);
         }
 
         .affiliation a {
-            font-weight: 500;
-        }
-
-        .tagline {
-            font-family: 'Lora', serif;
-            font-style: italic;
-            font-size: 1.08rem;
             color: var(--muted);
-            margin-top: 6px;
+            text-decoration: underline;
+            text-decoration-thickness: 1px;
+            text-underline-offset: 3px;
+            text-decoration-color: var(--rule);
+            transition: color .15s, text-decoration-color .15s;
         }
 
-        /* Availability banner — matches the venue pill / tldr feel */
-        .availability {
-            margin-top: 34px;
-            padding: 14px 18px;
-            background: var(--accent-soft);
-            border-left: 3px solid var(--accent);
-            border-radius: 3px;
-            font-size: .94rem;
+        .affiliation a:hover {
             color: var(--ink);
+            text-decoration-color: var(--faint);
         }
 
-        .availability strong {
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        .availability a {
-            font-weight: 500;
-            border-bottom: 1px solid transparent;
-        }
-
-        .availability a:hover {
-            border-bottom-color: var(--accent);
-        }
-
-        /* Quick link buttons — same component as TAMO page */
+        /* contact chips — light fill, no shadow, no lift */
         .link-row {
             display: flex;
-            gap: 10px;
             flex-wrap: wrap;
+            gap: 8px;
             margin-top: 24px;
         }
 
         .link-btn {
             display: inline-flex;
             align-items: center;
-            gap: 9px;
-            padding: 7px 18px;
-            background: var(--ink);
-            color: #fff;
-            border-radius: 30px;
-            font-size: .85rem;
+            gap: 7px;
+            padding: 6px 14px;
+            background: var(--chip);
+            color: var(--muted);
+            border-radius: 999px;
+            font-size: .82rem;
             font-weight: 500;
-            border: none;
-            transition: transform .15s, background .15s, box-shadow .15s;
+            transition: background .15s, color .15s;
         }
 
         .link-btn:hover {
             background: var(--accent);
-            border-bottom: 1px solid transparent;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(35, 69, 144, .18);
+            color: #fff;
         }
 
         .link-btn svg {
             width: 13px;
             height: 13px;
+            flex: none;
         }
 
-        /* ---------- CONTENT ---------- */
+        /* ---------- SECTIONS: label rail + measured column ---------- */
         .content {
-            padding-top: 60px;
-            padding-bottom: 40px;
+            padding-bottom: 8px;
         }
 
-        h2 {
-            font-family: 'Lora', serif;
-            font-weight: 500;
-            font-size: 1.7rem;
-            color: var(--ink);
-            margin: 64px 0 22px;
-            line-height: 1.3;
-            letter-spacing: -.008em;
-            position: relative;
-            padding-left: 18px;
+        .section {
+            display: grid;
+            grid-template-columns: var(--rail) minmax(0, var(--measure));
+            gap: 0 var(--gutter);
+            padding-top: 72px;
+            scroll-margin-top: 90px;
         }
 
-        h2::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: .42em;
-            bottom: .32em;
-            width: 3px;
-            background: var(--accent);
-            border-radius: 2px;
+        .section-label {
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--faint);
+            line-height: 1.5;
+            padding-top: 9px;
         }
 
-        h2:first-of-type {
-            margin-top: 0;
+        .section-body > p + p {
+            margin-top: 18px;
         }
 
-        @media (max-width:680px) {
-            h2 {
-                font-size: 1.42rem;
-                margin-top: 52px;
-            }
+        .section-body a {
+            text-decoration: underline;
+            text-decoration-thickness: 1px;
+            text-underline-offset: 3px;
+            text-decoration-color: var(--accent-line);
+            transition: text-decoration-color .15s;
         }
 
-        p {
-            margin-bottom: 18px;
+        .section-body a:hover {
+            text-decoration-color: var(--accent);
         }
 
         p strong {
             color: var(--ink);
-            font-weight: 600
+            font-weight: 600;
         }
 
         p em {
-            font-style: italic
+            font-style: italic;
         }
 
         /* ---------- PUBLICATIONS ---------- */
         .pub {
-            padding: 22px 0 22px 18px;
-            border-left: 2px solid var(--rule);
-            margin-bottom: 6px;
-            transition: border-color .15s;
+            padding: 28px 0;
         }
 
-        .pub:hover {
-            border-left-color: var(--accent);
+        .pub-list > .pub:first-child {
+            padding-top: 0;
         }
 
-        .pub+.pub {
-            border-top: 1px solid var(--rule-soft);
+        .pub-list > .pub + .pub {
+            border-top: 1px solid var(--rule);
+        }
+
+        .pub-venue {
+            font-size: .7rem;
+            font-weight: 600;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--faint);
+            margin-bottom: 9px;
+        }
+
+        /* the single spot of colour in the list — reserved for what's notable */
+        .pub-venue .badge {
+            color: var(--accent);
+            margin-left: 9px;
+            padding-left: 9px;
+            border-left: 1px solid var(--rule);
         }
 
         .pub-title {
             font-family: 'Lora', serif;
             font-weight: 500;
-            font-size: 1.18rem;
-            color: var(--ink);
-            line-height: 1.35;
-            margin-bottom: 6px;
+            font-size: 1.16rem;
+            line-height: 1.4;
             letter-spacing: -.003em;
+            color: var(--ink);
+            margin-bottom: 7px;
         }
 
         .pub-title a {
-            color: var(--ink);
-            border-bottom: none;
+            color: inherit;
+            transition: color .15s;
         }
 
         .pub-title a:hover {
@@ -288,9 +278,8 @@
         }
 
         .pub-authors {
-            font-size: .96rem;
+            font-size: .93rem;
             color: var(--muted);
-            margin-bottom: 4px;
         }
 
         .pub-authors .me {
@@ -298,98 +287,74 @@
             font-weight: 600;
         }
 
-        .pub-venue {
-            font-family: 'Source Sans 3', sans-serif;
-            font-size: .74rem;
-            font-weight: 600;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            margin-bottom: 10px;
+        .pub-tldr {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: .99rem;
+            line-height: 1.62;
+            color: var(--muted);
+            margin-top: 10px;
         }
 
-        .pub-tldr {
-            font-style: italic;
-            font-size: .96rem;
-            color: var(--muted);
-            margin-bottom: 10px;
-            max-width: 640px;
+        .pub-tldr strong {
+            font-weight: 600;
+            color: var(--body);
         }
 
         .pub-links {
             display: flex;
             flex-wrap: wrap;
-            gap: 14px;
+            gap: 16px;
+            margin-top: 13px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: .78rem;
+            font-size: .74rem;
         }
 
         .pub-links a {
-            color: var(--muted);
-            border-bottom: 1px dotted var(--muted-soft);
+            color: var(--faint);
+            transition: color .15s;
         }
 
         .pub-links a:hover {
             color: var(--accent);
-            border-bottom: 1px dotted var(--accent);
         }
 
-        .pub-group-label {
-            font-family: 'Source Sans 3', sans-serif;
-            font-size: .74rem;
+        .group-label {
+            margin-top: 40px;
+            padding-top: 26px;
+            border-top: 1px solid var(--rule);
+            font-size: .7rem;
             font-weight: 600;
-            color: var(--muted);
+            letter-spacing: .14em;
             text-transform: uppercase;
-            letter-spacing: .1em;
-            margin: 36px 0 4px 18px;
+            color: var(--faint);
         }
 
-        /* ---------- ELSEWHERE LIST ---------- */
-        .elsewhere {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px 22px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: .84rem;
-        }
-
-        .elsewhere a {
-            color: var(--body);
-            border-bottom: 1px dotted var(--muted-soft);
-        }
-
-        .elsewhere a:hover {
-            color: var(--accent);
-            border-bottom: 1px dotted var(--accent);
+        .group-label + .pub-list {
+            margin-top: 26px;
         }
 
         /* ---------- FOOTER ---------- */
         footer {
-            margin-top: 88px;
-            padding: 30px 0 52px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 8px 24px;
+            margin-top: 96px;
+            padding: 26px 0 64px;
             border-top: 1px solid var(--rule);
-            text-align: center;
-            font-size: .82rem;
-            color: var(--muted);
+            font-size: .8rem;
+            color: var(--faint);
         }
 
-        footer .mark {
-            font-family: 'Lora', serif;
-            font-style: italic;
-            color: var(--accent);
-        }
-
-        /* ---------- STICKY NAV (same component as TAMO page) ---------- */
+        /* ---------- STICKY NAV ---------- */
         .site-nav {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 100;
-            background: rgba(255, 255, 255, 0.88);
+            background: rgba(255, 255, 255, .86);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--rule);
@@ -402,44 +367,72 @@
         }
 
         .site-nav-inner {
-            max-width: 780px;
+            width: var(--page);
             margin: 0 auto;
             padding: 0 28px;
-            height: 46px;
+            height: 48px;
             display: flex;
             align-items: center;
+            gap: 26px;
         }
 
         .site-nav a {
-            font-size: .78rem;
-            font-weight: 500;
-            color: var(--muted);
-            letter-spacing: .04em;
-            padding: 0 14px;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            border-bottom: none;
+            font-size: .74rem;
+            font-weight: 600;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--faint);
             transition: color .15s;
         }
 
-        .site-nav a:hover {
-            color: var(--accent);
-            border-bottom: none;
-        }
-
+        .site-nav a:hover,
         .site-nav a.active {
-            color: var(--accent);
+            color: var(--ink);
         }
 
-        @media (max-width:680px) {
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width:1100px) {
+
+            .wrap,
             .site-nav-inner {
-                padding: 0 16px;
+                width: auto;
+                max-width: 900px;
+                padding: 0 32px;
+            }
+        }
+
+        @media (max-width:820px) {
+            body {
+                font-size: 18px;
             }
 
-            .site-nav a {
-                padding: 0 10px;
-                font-size: .72rem;
+            .section {
+                grid-template-columns: 1fr;
+                padding-top: 58px;
+            }
+
+            .section-label {
+                padding-top: 0;
+                margin-bottom: 16px;
+            }
+
+            header {
+                grid-template-columns: 1fr;
+                padding-top: 68px;
+            }
+
+            .avatar {
+                height: 92px;
+                min-height: 0;
+                margin: 0 0 20px;
+            }
+        }
+
+        @media (max-width:560px) {
+
+            .wrap,
+            .site-nav-inner {
+                padding: 0 22px;
             }
         }
     </style>
@@ -452,33 +445,33 @@
         <div class="site-nav-inner">
             <a href="#sec-about">About</a>
             <a href="#sec-publications">Publications</a>
-            <a href="#sec-contact">Elsewhere</a>
         </div>
     </nav>
 
-    <!-- ============================================================ HEADER -->
     <div class="wrap">
+
+        <!-- ============================================================ HEADER -->
         <header id="top">
-            <div class="header-grid">
-                <div class="name-block">
-                    <span class="eyebrow"><span class="pill">PhD Student</span></span>
-                    <h1>Xinyu Zhang</h1>
-                    <p class="affiliation">
-                        <a href="https://ellis.eu/institutes/finland">ELLIS Institute Finland</a>
-                        &nbsp;·&nbsp;
-                        <a href="https://www.aalto.fi/">Department of Computer Science, Aalto University</a>
-                    </p>
-                    <!-- <p class="tagline">I build policies for black-box optimization that adapt in-context.</p> -->
-                </div>
-            </div>
+            <div class="avatar" role="img" aria-label="Hand-drawn self-portrait of Xinyu Zhang"></div>
 
-            <div class="availability">
-                <strong>Open to research and applied science internships</strong> in machine learning.
-                 <!-- — available Spring / Summer 2027. -->
-                <a href="mailto:xinyu.2.zhang@aalto.fi">Get in touch →</a>
-            </div>
+            <div class="name-block">
+                <h1>Xinyu Zhang</h1>
+                <p class="role">Doctoral Researcher</p>
+                <p class="affiliation">
+                    <a href="https://ellis.eu/institutes/finland">ELLIS Institute Finland</a>
+                    &nbsp;·&nbsp;
+                    <a href="https://www.aalto.fi/">Department of Computer Science, Aalto University</a>
+                </p>
 
-            <div class="link-row">
+                <div class="link-row">
+                <a class="link-btn" href="mailto:xinyu.2.zhang@aalto.fi">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                    Email
+                </a>
                 <a class="link-btn" href="cv.pdf" target="_blank" rel="noopener">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
                         stroke-linejoin="round">
@@ -501,122 +494,140 @@
                     </svg>
                     GitHub
                 </a>
+                <a class="link-btn" href="https://www.linkedin.com/in/xinyu-zhang-cs/">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zM7.119 20.452H3.555V9h3.564v11.452z" />
+                    </svg>
+                        LinkedIn
+                    </a>
+                </div>
             </div>
         </header>
 
         <!-- ============================================================ CONTENT -->
-        <div class="content">
+        <main class="content">
 
-            <h2 id="sec-about">About</h2>
-            <p>
-                I'm a second-year PhD student at <a href="https://www.aalto.fi/">Aalto University</a> and the
-                <a href="https://www.ellisinstitute.fi/">ELLIS Institute Finland</a>, supervised by
-                Prof. <a href="https://kaski-lab.com/">Samuel Kaski</a>.
-                My research sits at the intersection of <strong>meta-learning, in-context learning, and sequential
-                decision-making</strong> — I train transformers via reinforcement learning to act as adaptive policies
-                that replace the surrogate-and-acquisition stack of Bayesian optimization with a single forward pass.
-                I'm interested in making these solutions robust to prior misspecification and scalable to
-                high-dimensional and combinatorial spaces.
-            </p>
-            <p>
-                Before the PhD, I completed my Master's in Computer Science at Aalto University, and Bachelor's in
-                Computer Science and Engineering at Harbin Institute of Technology, Shenzhen.
-                Outside research I enjoy bouldering 🧗 and doodling 🖊️.
-            </p>
+            <section class="section" id="sec-about">
+                <h2 class="section-label">About</h2>
+                <div class="section-body">
+                    <p>
+                        I'm a second-year PhD student at <a href="https://www.aalto.fi/">Aalto University</a> and the
+                        <a href="https://www.ellisinstitute.fi/">ELLIS Institute Finland</a>, supervised by
+                        Prof. <a href="https://kaski-lab.com/">Samuel Kaski</a>.
+                        My research focuses on <strong>meta-learning, amortized inference, and Bayesian
+                        optimization</strong>.
+                    </p>
+                    <p>
+                        Before the PhD, I completed my Master's in Computer Science at Aalto University, and Bachelor's
+                        in Computer Science and Engineering at Harbin Institute of Technology, Shenzhen.
+                        Outside research I enjoy bouldering 🧗 and doodling 🖊️.
+                    </p>
+                </div>
+            </section>
 
-            <h2 id="sec-publications">Publications</h2>
+            <section class="section" id="sec-publications">
+                <h2 class="section-label">Publications</h2>
+                <div class="section-body">
 
-            <div class="pub">
-                <div class="pub-title">
-                    <a href="https://openreview.net/forum?id=odmeUlWta8">In-Context Multi-Objective Optimization</a>
-                </div>
-                <div class="pub-authors">
-                    <span class="me">Xinyu Zhang</span>, Conor Hassan, Julien Martinelli, Daolang Huang, Samuel Kaski
-                </div>
-                <div class="pub-venue">ICLR 2026</div>
-                <div class="pub-tldr">
-                    A <strong>dimension-agnostic</strong> transformer that replaces the surrogate-plus-acquisition stack
-                    of (multi-objective)
-                    Bayesian optimization with a single forward pass; 50–1000× faster proposal time at matched Pareto
-                    quality.
-                </div>
-                <div class="pub-links">
-                    <a href="https://openreview.net/forum?id=odmeUlWta8">paper</a>
-                    <a href="https://github.com/xinyuzc/in-context-moo">code</a>
-                    <a href="https://xinyuzc.github.io/tamo">website</a>
-                </div>
-            </div>
+                    <div class="pub-list">
+                        <article class="pub">
+                            <div class="pub-venue">ICLR 2026</div>
+                            <h3 class="pub-title">
+                                <a href="https://openreview.net/forum?id=odmeUlWta8">In-Context Multi-Objective
+                                    Optimization</a>
+                            </h3>
+                            <div class="pub-authors">
+                                <span class="me">Xinyu Zhang</span>, Conor Hassan, Julien Martinelli, Daolang Huang,
+                                Samuel Kaski
+                            </div>
+                            <p class="pub-tldr">
+                                A <strong>dimension-agnostic</strong> transformer that replaces the
+                                surrogate-plus-acquisition stack of (multi-objective) Bayesian optimization with a
+                                single forward pass; 50–1000× faster proposal time at matched Pareto quality.
+                            </p>
+                            <div class="pub-links">
+                                <a href="https://openreview.net/forum?id=odmeUlWta8">paper</a>
+                                <a href="https://github.com/xinyuzc/in-context-moo">code</a>
+                                <a href="https://xinyuzc.github.io/tamo">website</a>
+                            </div>
+                        </article>
 
-            <div class="pub">
-                <div class="pub-title">
-                    Constrained Bayesian Experimental Design via Online Planning
-                </div>
-                <div class="pub-authors">
-                    Yujia Guo, Daolang Huang, <span class="me">Xinyu Zhang</span>, Samuel Kaski, Ayush Bharti
-                </div>
-                <div class="pub-venue">ICML 2026</div>
-                <div class="pub-tldr">
-                    Enables constrained Bayesian experimental design by combining offline pre-training of an amortized policy and a posterior network with <strong>online multi-step lookahead planning</strong> using scenario trees. 
+                        <article class="pub">
+                            <div class="pub-venue">ICML 2026</div>
+                            <h3 class="pub-title">
+                                <a href="https://openreview.net/forum?id=47PywA0l3h">Constrained Bayesian Experimental Design via
+                                    Online Planning</a>
+                            </h3>
+                            <div class="pub-authors">
+                                Yujia Guo, Daolang Huang, <span class="me">Xinyu Zhang</span>, Samuel Kaski, Ayush
+                                Bharti
+                            </div>
+                            <p class="pub-tldr">
+                                Enables constrained Bayesian experimental design by combining offline pre-training of an
+                                amortized policy and a posterior network with <strong>online multi-step lookahead
+                                planning</strong> using scenario trees.
+                            </p>
+                            <div class="pub-links">
+                                <a href="https://openreview.net/forum?id=47PywA0l3h">paper</a>
+                            </div>
+                        </article>
+
+                        <article class="pub">
+                            <div class="pub-venue">ICLR 2025 <span class="badge">Spotlight · top 5%</span></div>
+                            <h3 class="pub-title">
+                                <a href="https://openreview.net/forum?id=YhfrKB3Ah7">PABBO: Preferential Amortized
+                                    Black-Box Optimization</a>
+                            </h3>
+                            <div class="pub-authors">
+                                <span class="me">Xinyu Zhang</span>, Daolang Huang, Samuel Kaski, Julien Martinelli
+                            </div>
+                            <p class="pub-tldr">
+                                A transformer neural process trained with reinforcement learning that <strong>fully
+                                amortizes preferential Bayesian optimization</strong>: meta-learning both the surrogate
+                                and the acquisition function. Several orders of magnitude faster than Gaussian-process
+                                baselines, and often more accurate.
+                            </p>
+                            <div class="pub-links">
+                                <a href="https://openreview.net/forum?id=YhfrKB3Ah7">paper</a>
+                                <a href="https://github.com/xinyuzc/PABBO">code</a>
+                            </div>
+                        </article>
+                    </div>
+
+                    <p class="group-label">Workshops &amp; Preprints</p>
+
+                    <div class="pub-list">
+                        <article class="pub">
+                            <div class="pub-venue">IJCAI XAI Workshop 2024</div>
+                            <h3 class="pub-title">
+                                <a href="https://arxiv.org/abs/2504.10169">Challenges in Interpretability of Additive
+                                    Models</a>
+                            </h3>
+                            <div class="pub-authors">
+                                <span class="me">Xinyu Zhang</span>, Julien Martinelli, ST John
+                            </div>
+                            <p class="pub-tldr">
+                                Generalized additive models — including their recent neural-network variants — exhibit
+                                multiple forms of <strong>nonidentifiability</strong> that complicate interpretation. We
+                                argue for restraint when claiming such models as interpretable or suitable for
+                                safety-critical applications.
+                            </p>
+                            <div class="pub-links">
+                                <a href="https://arxiv.org/abs/2504.10169">paper</a>
+                            </div>
+                        </article>
+                    </div>
 
                 </div>
-                <div class="pub-links">
-                    <a href="https://openreview.net/forum?id=47PywA0l3h">paper</a>
-                </div>
-            </div>
-
-            <div class="pub">
-                <div class="pub-title">
-                    <a href="https://openreview.net/forum?id=YhfrKB3Ah7">
-                        PABBO: Preferential Amortized Black-Box Optimization</a>
-                </div>
-                <div class="pub-authors">
-                    <span class="me">Xinyu Zhang</span>, Daolang Huang, Samuel Kaski, Julien Martinelli
-                </div>
-                <div class="pub-venue">ICLR 2025 (Spotlight — top ~5% of submissions)</div>
-                <div class="pub-tldr">
-                    A transformer neural process trained with reinforcement learning that <strong>fully amortizes preferential 
-                    Bayesian optimization</strong>: meta-learning both the surrogate and the acquisition function. Several orders
-                    of magnitude faster than Gaussian-process baselines, and often more accurate.
-                </div>
-                <div class="pub-links">
-                    <a href="https://openreview.net/forum?id=YhfrKB3Ah7">paper</a>
-                    <a href="https://github.com/xinyuzc/PABBO">code</a>
-                </div>
-            </div>
-            <p class="pub-group-label">Workshops &amp; Preprints</p>
-
-            <div class="pub">
-                <div class="pub-title">
-                    <a href="https://arxiv.org/abs/2504.10169">Challenges in Interpretability of Additive Models</a>
-                </div>
-                <div class="pub-authors">
-                    <span class="me">Xinyu Zhang</span>, Julien Martinelli, ST John
-                </div>
-                <div class="pub-venue">IJCAI XAI workshop 2024</div>
-                <div class="pub-tldr">
-                    Generalized additive models — including their recent neural-network variants — exhibit multiple
-                    forms of <strong>nonidentifiability</strong> that complicate interpretation. We argue for restraint
-                    when claiming such models as <em>interpretable</em> or <em>suitable for safety-critical applications</em>.
-                </div>
-                <div class="pub-links">
-                    <a href="https://arxiv.org/abs/2504.10169">paper</a>
-                </div>
-            </div>
-
-            <h2 id="sec-contact">Elsewhere</h2>
-            <ul class="elsewhere">
-                <li><a href="mailto:xinyu.2.zhang@aalto.fi">email</a></li>
-                <li><a href="cv.pdf" target="_blank" rel="noopener">cv (pdf)</a></li>
-                <li><a href="https://scholar.google.com/citations?user=v-4mhZkAAAAJ&hl=en">google scholar</a></li>
-                <li><a href="https://github.com/xinyuzc">github</a></li>
-                <li><a href="https://www.linkedin.com/in/xinyu-zhang-cs/">linkedin</a></li>
-            </ul>
+            </section>
 
             <footer>
-                © 2026 Xinyu Zhang &nbsp;·&nbsp; <span class="mark">last updated May 2026</span>
+                <span>© 2026 Xinyu Zhang</span>
+                <span>Last updated May 2026</span>
             </footer>
 
-        </div>
+        </main>
     </div>
 
     <script>

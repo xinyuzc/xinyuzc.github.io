@@ -3,3 +3,6 @@
 # note_template.md
 *.tex
 /local
+
+# full-resolution avatar original — only the 300px avatar-web.jpg is published
+/assets/avatar.jpg
